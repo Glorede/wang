@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title th:text="${sectionName}"></title>
     <link rel="stylesheet" href="../static/css/bootstrap.css" th:href="@{/css/bootstrap.css}">
     <link rel="stylesheet" href="../static/css/bootstrap-theme.css" th:href="@{/css/bootstrap-theme.css}">
     <link rel="stylesheet" href="../static/css/community.css" th:href="@{/css/community.css}">
@@ -14,12 +14,11 @@
 </head>
 <body>
 <div th:insert="~{navigation :: nav}"></div>
-<div class="container-fluid main">
+<div class="container-fluid main profile">
     <div class="row">
         <div class="col-lg-9 col-md-12 col-sm-12 col-xs-9">
-            <h2><span class="glyphicon glyphicon-list" aria-hidden="true">发现</span></h2>
+            <h2><span th:text="${sectionName}"></span></h2>
             <hr>
-            <!-- 取到的来自UserController里的model的panination -->
             <div class="media" th:each="question : ${pagination.questions}">
                 <div class="media-left">
                     <a href="#">
@@ -35,7 +34,7 @@
                     <span class="text-desc">
                             <span th:text="${question.commentCount}"></span>个回复
                             <span th:text="${question.viewCount}"></span>个浏览
-                            <span th:text="${#dates.format(question.gmtCreate,'yyyy-mm-dd HH:mm')}"></span></span>时间
+                            <span th:text="${#dates.format(question.gmtCreate,'yyyy-mm-dd HH:mm')}"></span></span>
                     </span>
                 </div>
             </div>
@@ -66,10 +65,19 @@
                     </li>
                 </ul>
             </nav>
+            <!-- 取到的来自UserController里的model的panination -->
+
+
         </div>
 
         <div class="col-lg-3 col-md-12 col-sm-12 col-xs-9">
-            <h3>热门话题</h3>
+            <div class="list-group section" >
+                <a href="/profile/questions"  th:class="${section == 'questions'} ? 'active list-group-item' : 'list-group-item'">我的问题</a>
+                <a href="/profile/replies"  th:class="${section == 'replies'} ? 'active list-group-item' : 'list-group-item'">
+                    最新回复
+                    <span class="badge">14</span>
+                </a>
+            </div>
         </div>
     </div>
 </div>

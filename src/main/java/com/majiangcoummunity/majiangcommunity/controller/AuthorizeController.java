@@ -1,10 +1,11 @@
-package com.majiangcoummunity.majiangcommunity.Controller;
+package com.majiangcoummunity.majiangcommunity.controller;
 
 import com.majiangcoummunity.majiangcommunity.Provider.GitHubProvider;
 import com.majiangcoummunity.majiangcommunity.dto.AccessTokenDTO;
 import com.majiangcoummunity.majiangcommunity.dto.GitHubUser;
 import com.majiangcoummunity.majiangcommunity.mapper.UserMapper;
 import com.majiangcoummunity.majiangcommunity.model.User;
+import com.majiangcoummunity.majiangcommunity.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -35,6 +36,9 @@ public class AuthorizeController {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private UserService userService;
+
     @GetMapping("/callback")
     public String index(@RequestParam(name = "code") String code,
                         @RequestParam(name = "state") String state,
@@ -49,16 +53,15 @@ public class AuthorizeController {
 
         String accessToken = gitHubProvider.getAccessToken(accessTokenDTO);
         GitHubUser gitHubUser = gitHubProvider.getUser(accessToken);
-        if(gitHubUser != null){
+        if(gitHubUser != null && gitHubUser.getId() != null){
             User user = new User();
-            user.setName(gitHubUser.getName());
-            user.setAccountId(String.valueOf(gitHubUser.getId()));
-            user.setGmtCreate(System.currentTimeMillis());
-            //ctrl+alt+v 将变量分离出来
             String token = UUID.randomUUID().toString();
             user.setToken(token);
-            user.setGmtModified(user.getGmtCreate());
-            userMapper.insert(user);
+            user.setName(gitHubUser.getName());
+            user.setAccountId(String.valueOf(gitHubUser.getId()));
+            //ctrl+alt+v 将变量分离出来
+            user.setAvatarUrl(gitHubUser.getAvatar_url());
+            userService.createOrUpdate(user);
             //手动写入cookie
             response.addCookie(new Cookie("token", token));
 
@@ -70,6 +73,16 @@ public class AuthorizeController {
             return "redirect:/";
 
         }
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request,
+                         HttpServletResponse response){
+        request.getSession().removeAttribute("user");
+        Cookie cookie = new Cookie("token", null);
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+        return "redirect:/";
     }
 
 }
